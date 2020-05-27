@@ -51,6 +51,13 @@ namespace rudis
         R_ENCODING_INVALID
     };
 
+    enum RuError
+    {
+        RuError_ok,
+        RuError_no_exist,
+        RuError_type
+    };
+
     class RSortedSet
     {
         // TODO: sset
