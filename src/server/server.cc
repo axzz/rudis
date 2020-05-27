@@ -36,7 +36,6 @@ namespace mynet
       for (auto activeSocket : activeSockets)
       {
         activeSocket->handleEvents();
-        // 可以直接让其在poll中干
       }
     }
   }
