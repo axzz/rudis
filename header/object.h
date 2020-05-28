@@ -74,8 +74,8 @@ namespace rudis
     {
     public:
         static uint32_t lruclock;
-        unsigned int type : 4;
-        unsigned int encoding : 4;
+        Type type;
+        Encoding encoding;
         unsigned long long lru;
 
         void *value;
