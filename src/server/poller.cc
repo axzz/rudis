@@ -1,84 +1,81 @@
 #include "server.h"
 #include <errno.h>
 #include <iostream>
-#include "assert.h" 
+#include "assert.h"
 #define INFTIM -1
 
-namespace mynet
+void Poller::update(Socket *socket)
 {
-  void Poller::update(Socket *socket)
+  if (socket->index() < 0)
   {
-    if (socket->index() < 0)
-    {
-      pollfd pfd;
-      pfd.fd = socket->fd();
-      pfd.events = POLLIN | POLLPRI; // 更常规的服务器此处可变
-      pfd.revents = 0;
-      polls.push_back(pfd);
-      socket->set_index(static_cast<int>(polls.size()) - 1);
-      sockets[pfd.fd] = socket;
-    }
-    else
-    {
-      size_t idx = socket->index();
-      auto &pfd = polls[idx];
-      pfd.fd = socket->fd();
-      pfd.events = POLLIN | POLLPRI;
-      pfd.revents = 0;
-    }
+    pollfd pfd;
+    pfd.fd = socket->fd();
+    pfd.events = POLLIN | POLLPRI; // 更常规的服务器此处可变
+    pfd.revents = 0;
+    polls.push_back(pfd);
+    socket->set_index(static_cast<int>(polls.size()) - 1);
+    sockets[pfd.fd] = socket;
   }
-
-  void Poller::remove(Socket *socket)
+  else
   {
-    int idx = socket->index();
-    assert(sockets.find(socket->fd()) != sockets.end());
-    sockets.erase(socket->fd());
-    if (idx == static_cast<int>(polls.size() - 1))
-    {
-      polls.pop_back();
-    }
-    else
-    {
-      auto last_socket = sockets[polls.back().fd];
-      std::iter_swap(polls.begin() + idx, polls.end() - 1);
-      last_socket->set_index(idx);
-      polls.pop_back();
-    }
+    size_t idx = socket->index();
+    auto &pfd = polls[idx];
+    pfd.fd = socket->fd();
+    pfd.events = POLLIN | POLLPRI;
+    pfd.revents = 0;
   }
+}
 
-  void Poller::poll(vector<Socket *> &activeSockets)
+void Poller::remove(Socket *socket)
+{
+  int idx = socket->index();
+  assert(sockets.find(socket->fd()) != sockets.end());
+  sockets.erase(socket->fd());
+  if (idx == static_cast<int>(polls.size() - 1))
   {
-    int numEvents = ::poll(&*polls.begin(), polls.size(), INFTIM);
-    int savedError = errno;
-    activeSockets.clear();
-    if (numEvents == 0)
+    polls.pop_back();
+  }
+  else
+  {
+    auto last_socket = sockets[polls.back().fd];
+    std::iter_swap(polls.begin() + idx, polls.end() - 1);
+    last_socket->set_index(idx);
+    polls.pop_back();
+  }
+}
+
+void Poller::poll(vector<Socket *> &activeSockets)
+{
+  int numEvents = ::poll(&*polls.begin(), polls.size(), INFTIM);
+  int savedError = errno;
+  activeSockets.clear();
+  if (numEvents == 0)
+  {
+    //TODO: log
+  }
+  else if (numEvents < 0)
+  {
+    if (savedError != EINTR)
     {
+      errno = savedError;
       //TODO: log
     }
-    else if (numEvents < 0)
+  }
+  else
+  {
+    for (auto &p : polls)
     {
-      if (savedError != EINTR)
+      if (numEvents == 0)
       {
-        errno = savedError;
-        //TODO: log
+        break;
       }
-    }
-    else
-    {
-      for (auto &p : polls)
+      if (p.revents > 0)
       {
-        if (numEvents == 0)
-        {
-          break;
-        }
-        if (p.revents > 0)
-        {
-          --numEvents;
-          Socket *socket = sockets.find(p.fd)->second;
-          socket->set_revents(p.revents);
-          activeSockets.push_back(socket);
-        }
+        --numEvents;
+        Socket *socket = sockets.find(p.fd)->second;
+        socket->set_revents(p.revents);
+        activeSockets.push_back(socket);
       }
     }
   }
-} // namespace rudis
+}
