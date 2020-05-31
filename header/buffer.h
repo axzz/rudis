@@ -8,24 +8,31 @@ namespace rudis
     //收到请求时调用，直接产生
     vector<RString> reveive_buffer(Socket &skt);
 
-    //reply生成器
+    //reply生成器 builder
     class ReplyBuffer
     {
     private:
         vector<char> buffer;
         /* data */
     public:
-        ReplyBuffer();
-        ~ReplyBuffer();
-        void push();
+        ReplyBuffer(){};
+        ~ReplyBuffer(){};
 
-        char *c_str();//应使用
+        char *c_str() { return &buffer[0]; };
         size_t size() { return buffer.size(); };
 
+        void clear();
         void reply_ok();
-        void reply_error();
-    };
+        void reply_state(RString str);
+        void reply_simple_error();
+        void reply_error(RString str);
+        void push_int(int num);
+        void push_str(RString str);
+        void mutli_init(int num);
 
-    void callback_test(Socket &skt);
+    private:
+        void push(RString str);
+        void push_CRLF();
+    };
 
 } // namespace rudis

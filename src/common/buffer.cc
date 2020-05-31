@@ -51,14 +51,6 @@ namespace rudis
         return res;
     }
 
-    void callback_test(Socket &skt)
-    {
-        auto res = reveive_buffer(skt);
-        for (auto &str : res)
-        {
-            std::cout << str << std::endl;
-        }
-    }
 
     void ReplyBuffer::clear()
     {
