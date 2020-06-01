@@ -67,10 +67,7 @@ namespace rudis
 
     void ReplyBuffer::push_CRLF()
     {
-        for (char c : CRLF)
-        {
-            buffer.push_back(c);
-        }
+        push("\r\n");
     }
 
     void ReplyBuffer::reply_ok()

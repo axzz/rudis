@@ -98,6 +98,7 @@ namespace rudis
         if (touch)
         {
           //TODO: touch
+          value->lru=RObject::lruclock;
         }
         return RuError_ok;
       }

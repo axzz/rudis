@@ -94,13 +94,18 @@ void Socket::default_read(Socket &socket)
 {
     char buf[1024];
     ssize_t n = ::read(fd_, buf, 1024);
+    char reply[10] = "+OK\r\n";
+    for (int i = 0; i < n; i++)
+    {
+        std::cout << buf[i];
+    }
     if (n == 0)
     {
         close();
     }
     else
     {
-        write(buf, n);
+        write(reply, 5);
     }
 }
 
