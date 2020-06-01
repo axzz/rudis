@@ -12,5 +12,5 @@ aux_source_directory(src/common R_COMMON)
 aux_source_directory(src/objects R_OBJECTS)
 aux_source_directory(src/server R_SERVER)
 
-add_executable(main src/main.cc ${R_SERVER} ${R_OBJECTS} ${R_COMMON})
-add_executable(test_time tests/test_time.cc)
+add_executable(main src/main.cc ${R_SERVER} ${R_OBJECTS} ${R_COMMON} ${R_COMMANDS})
+add_executable(test_echo tests/test_echo.cc ${R_SERVER} ${R_OBJECTS} ${R_COMMON} ${R_COMMANDS})
